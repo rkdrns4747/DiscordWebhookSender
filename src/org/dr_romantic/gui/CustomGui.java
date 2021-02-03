@@ -29,7 +29,7 @@ public class CustomGui extends JFrame{
 
 
 
-    public CustomGui(String webhookContents) throws IOException, InterruptedException {
+    public CustomGui(String webhookContents) throws IOException {
         final Lang LANG_PACK = Main.getLangPack();
 
         String[] webhookInfo = webhookContents.split("/");
@@ -112,15 +112,16 @@ public class CustomGui extends JFrame{
         JScrollPane contentWrapper = new JScrollPane(contentArea);
         contentWrapper.setBounds(155, 280, 445, 180);
 
-        //buttons
 
+
+        //buttons
         DefaultButton changeWebhookButton = new DefaultButton("change_webhook", Messages.CHANGE_WEBHOOK, 454, 95);
         changeWebhookButton.setSize(changeWebhookButton.getSize().width + 55, changeWebhookButton.getSize().height);
         changeWebhookButton.addActionListener(e -> {
             String[] newInfo;
             try {
                 newInfo = WebUtils.requestWebhookInfo().split("/");
-                if(!newInfo[0].equals("CANCELED") && !id.equals(newInfo[0])) {//check if id changed -> token should also be changed if idが違う
+                if(!newInfo[0].equals("CANCELED") && !id.equals(newInfo[0])) {
                         changeWebhookInfo(newInfo);
                         id = newInfo[0];
                         token = newInfo[1];
@@ -133,7 +134,6 @@ public class CustomGui extends JFrame{
                         channelIdField.setEnabled(false);
                         DefaultInfoMessagePanePopup successPopup = new DefaultInfoMessagePanePopup(Messages.WEBHOOK_CHANGE_SUCCESS, Messages.WEBHOOK_CHANGE_SUCCESS_TITLE, null);
                         successPopup.open();
-
                 }
             } catch (IOException | ParseException ex) {
                 ex.getStackTrace();
@@ -166,11 +166,11 @@ public class CustomGui extends JFrame{
         previewButton.addActionListener(e -> {
             try {
                 JFrame imagePreviewFrame = new JFrame("image-preview");
-                Image pureImage = WebUtils.getImageFromUrl(avatarField.getText());
+                BufferedImage pureImage = WebUtils.getImageFromUrl(avatarField.getText());
                 Image previewCover = ResourceUtils.getImageFromPath(ResourceUtils.RESOURCE_PATH+"cover.png");
                 BufferedImage preview = new BufferedImage(512, 512, BufferedImage.TYPE_INT_ARGB);
                 Graphics previewGraphic = preview.createGraphics();
-                previewGraphic.drawImage(pureImage, 0, 0, 512, 512, null);
+                previewGraphic.drawImage(ResourceUtils.cropAsAvatarImage(pureImage), 0, 0, 512, 512, null);
                 previewGraphic.drawImage(previewCover, 0, 0, 512, 512, null);
                 previewGraphic.dispose();
                 JLabel previewLabel = new JLabel(new ImageIcon(preview));
@@ -187,6 +187,7 @@ public class CustomGui extends JFrame{
 
         DefaultButton sendButton = new DefaultButton("submit", Messages.SEND, 500, 480);
         sendButton.addActionListener(e ->{
+
             //check if username, content has appropriate length
             int unCharLength = usernameField.getText().replaceAll("[\\n\\t]", "").length();
             int caCharLength = contentArea.getText().replaceAll("[\\n\\t]", "").length();
@@ -200,38 +201,74 @@ public class CustomGui extends JFrame{
                 return;
             }
 
-            //check if webhook still available
-            /**
-            if(!WebUtils.checkWebhookAvailability(id, token)){
-                DefaultInfoMessagePanePopup errorPopup = new DefaultInfoMessagePanePopup(Messages.ERROR_WEBHOOK_NOT_FOUND, Messages.ERROR_GENERAL_TITLE, null);
+            //make impossible press button while sending
+            sendButton.setEnabled(false);
+
+
+
+            try {
+                //check if webhook still available
+                if (!WebUtils.checkWebhookAvailability(id, token)) {
+                    DefaultErrorMessagePanePopup errorPopup = new DefaultErrorMessagePanePopup(Messages.ERROR_WEBHOOK_NOT_FOUND, Messages.ERROR_GENERAL_TITLE, null);
+                    errorPopup.open();
+                    sendButton.setEnabled(true);
+                    return;
+                }
+
+                //check if webhook can change channel
+                if (!WebUtils.checkWebhookPermission(id, botTokenField.getText())) {
+                    //if not, only send task
+                    channelIdField.setText(channelId);
+                    channelIdField.setEnabled(false);
+                    botTokenField.setEnabled(true);
+                    if (WebUtils.executeWebhook(usernameField.getText(), contentArea.getText(), avatarField.getText(), id, token) == WebUtils.Result.DENY) {
+                        DefaultErrorMessagePanePopup errorPopup = new DefaultErrorMessagePanePopup(Messages.ERROR_GENERAL, Messages.ERROR_GENERAL_TITLE, null);
+                        errorPopup.open();
+                    } else {
+                        DefaultInfoMessagePanePopup successPopup = new DefaultInfoMessagePanePopup(Messages.WEBHOOK_SEND_SUCCESS, Messages.WEBHOOK_SEND_SUCCESS_TITLE, null);
+                        successPopup.open();
+                    }
+                } else {
+                    //if can, change channel, send, and also turn it back.
+                    String currentBotToken = botTokenField.getText();
+                    String currentChannelId = channelIdField.getText();
+                    //check channel's existence first
+                    if (!WebUtils.checkChannelExist(currentChannelId, currentBotToken)) {
+                        DefaultErrorMessagePanePopup errorPopup = new DefaultErrorMessagePanePopup(Messages.ERROR_CHANNEL_NOT_FOUND, Messages.ERROR_GENERAL_TITLE, null);
+                        errorPopup.open();
+                        sendButton.setEnabled(true);
+                        return;
+                    }
+                    WebUtils.Result result;
+                    //if channelId equals current field value, no need to change channel. patch task is pretty long.
+                    if(!channelId.equals(channelIdField.getText())) {
+                        WebUtils.changeChannel(id, currentChannelId, currentBotToken);
+                        result = WebUtils.executeWebhook(usernameField.getText(), contentArea.getText(), avatarField.getText(), id, token);
+                        WebUtils.changeChannel(id, channelId, currentBotToken);
+                    }else{
+                        result = WebUtils.executeWebhook(usernameField.getText(), contentArea.getText(), avatarField.getText(), id, token);
+                    }
+                    if(result == WebUtils.Result.ALLOW) {
+                        DefaultInfoMessagePanePopup successPopup = new DefaultInfoMessagePanePopup(Messages.WEBHOOK_SEND_SUCCESS, Messages.WEBHOOK_SEND_SUCCESS_TITLE, null);
+                        successPopup.open();
+                    }else{
+                        DefaultInfoMessagePanePopup errorPopup = new DefaultInfoMessagePanePopup(Messages.ERROR_GENERAL, Messages.ERROR_GENERAL_TITLE, null);
+                        errorPopup.open();
+                    }
+                }
+            } catch (IOException|InterruptedException|ParseException exception){
+                DefaultErrorMessagePanePopup errorPopup = new DefaultErrorMessagePanePopup(Messages.ERROR_GENERAL, Messages.ERROR_GENERAL_TITLE, null);
                 errorPopup.open();
-                return;
+            }finally {
+                sendButton.setEnabled(true);
             }
-
-            //check if webhook can change channel
-            if(!WebUtils.checkWebhookPermission(id, botTokenField.getText())){
-                int result = WebUtils.executeWebhook(usernameField.getText(), contentArea.getText(), avatarField.getText(), id, token);
-                //do default send
-            }else {
-
-                //change channel, send, and also turn it back.
-            }
-             **/
-
-            //try {
-               // WebUtils.executeWebhook(username.getText(), contentArea.getText(), avatarUrl.getText(), id, token);
-            //} catch (IOException ioException) {
-               // ioException.printStackTrace();
-            //}
 
         });
-        //sendButton.setSize(100, 300);
 
 
-        /* code for supporting local image. might be used
+        /* support later
 
         DefaultButton chooseAvatarButton = new DefaultButton("select_avatar", Messages.CHOOSE_AVATAR, 130, 130);
-
         chooseAvatarButton.setSize(chooseAvatarButton.getSize().width + 20, chooseAvatarButton.getSize().height);
         chooseAvatarButton.addActionListener(e -> {
             JFrame fileChooseFrame = new JFrame();
@@ -243,20 +280,9 @@ public class CustomGui extends JFrame{
             fileChooseFrame.add(chooser);
             int dialog = chooser.showOpenDialog(null);
             String path = chooser.getSelectedFile() != null ? chooser.getSelectedFile().getPath() : "";
-            System.out.println(path);
-            //fileChooser.add(new DefaultButton("test", Messages.TEST, 30, 30));
-            //fileChooseFrame.setVisible(true);
+            //System.out.println(path);
         });
          */
-
-        DefaultButton testButton = new DefaultButton("submit", Messages.TEST, 300, 480);
-        testButton.addActionListener(e -> {
-            try {
-                System.out.println(WebUtils.checkChannelExist(channelId, botTokenField.getText()));
-            } catch (IOException | ParseException ioException) {
-                ioException.printStackTrace();
-            }
-        });
 
         add(idLabel);
         add(idField);
@@ -275,8 +301,7 @@ public class CustomGui extends JFrame{
         add(usernameField);
         add(contentLabel);
         add(contentWrapper);
-        //add(chooseAvatarButton);
-        add(testButton);
+        //add(chooseAvatarButton); -> support later
         add(sendButton);
         setVisible(true);
     }
