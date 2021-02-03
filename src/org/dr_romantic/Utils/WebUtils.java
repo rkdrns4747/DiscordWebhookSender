@@ -44,7 +44,7 @@ public class WebUtils {
         URL getUrl = new URL("https://discord.com/api/webhooks/"+id+"/"+token);
         HttpsURLConnection connection = (HttpsURLConnection) getUrl.openConnection();
         connection.addRequestProperty("Content-Type", "application/json");
-        connection.addRequestProperty("User-Agent", "Dr_Romantic_Discord_Webhook");
+        connection.addRequestProperty("User-Agent", "DiscordWebhookSender");
         connection.setDoOutput(true);
         connection.setRequestMethod("GET");
 
@@ -105,7 +105,7 @@ public class WebUtils {
 
         HttpsURLConnection connection = (HttpsURLConnection) postUrl.openConnection();
         connection.addRequestProperty("Content-Type", "application/json");
-        connection.addRequestProperty("User-Agent", "Dr_Romantic_Discord_Webhook");
+        connection.addRequestProperty("User-Agent", "DiscordWebhookSender");
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
 
@@ -134,7 +134,7 @@ public class WebUtils {
         HttpsURLConnection connection = (HttpsURLConnection) getUrl.openConnection();
         connection.addRequestProperty("Authorization", "Bot "+botToken);  //security issue
         connection.addRequestProperty("Content-Type", "application/json");
-        connection.addRequestProperty("User-Agent", "Dr_Romantic_Discord_Webhook");
+        connection.addRequestProperty("User-Agent", "DiscordWebhookSender");
         connection.setDoOutput(true);
         connection.setRequestMethod("GET");
 
