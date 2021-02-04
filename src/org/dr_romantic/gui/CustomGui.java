@@ -1,22 +1,17 @@
 package org.dr_romantic.gui;
 
 import javax.swing.*;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.DocumentFilter;
 
 import org.dr_romantic.Utils.ResourceUtils;
 import org.dr_romantic.gui.Lang.Messages;
 import org.dr_romantic.Utils.WebUtils;
-import org.dr_romantic.main.Main;
+import org.dr_romantic.main.DiscordWebhookSender;
 import org.dr_romantic.gui.StructureComponents.*;
 import org.json.simple.parser.ParseException;
-import org.w3c.dom.css.RGBColor;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.nio.Buffer;
 import java.util.Arrays;
 
 public class CustomGui extends JFrame{
@@ -24,20 +19,16 @@ public class CustomGui extends JFrame{
     private String id;
     private String token;
     private String channelId;
-    private String avatar;
+    private String avatarUrl;
     private String username;
 
 
 
     public CustomGui(String webhookContents) throws IOException {
-        final Lang LANG_PACK = Main.getLangPack();
+        final Lang LANG_PACK = DiscordWebhookSender.getLangPack();
 
         String[] webhookInfo = webhookContents.split("/");
-        id = webhookInfo[0];
-        token = webhookInfo[1];
-        channelId = webhookInfo[2];
-        avatar = webhookInfo[3];
-        username = webhookInfo[4];
+        setWebhookInfo(webhookInfo);
         setSize( 640,560);
         setTitle(LANG_PACK.get(Messages.TITLE));
         setResizable(false);
@@ -45,7 +36,7 @@ public class CustomGui extends JFrame{
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setIconImage(ResourceUtils.getImageFromPath(ResourceUtils.RESOURCE_PATH+"icon.png"));
+        setIconImage(ResourceUtils.getImageFromPath("icon.png"));
 
 
         JLabel idLabel = new JLabel(LANG_PACK.get(Messages.WEBHOOK_ID_LABEL));
@@ -94,7 +85,7 @@ public class CustomGui extends JFrame{
         avatarLabel.setBounds(9, 207, 134, 15);
 
         //since discord does not support cdn.discord.com, we have to use old cdn.discordapp.com data.
-        JTextField avatarField = new HintTextField("avatarField",  avatar != null ? "https://cdn.discordapp.com/avatars/"+id+"/"+avatar+".png" : "", 155, 200, 340, 30);
+        JTextField avatarField = new HintTextField("avatarField",  avatarUrl, 155, 200, 340, 30);
 
         JLabel usernameLabel = new JLabel(LANG_PACK.get(Messages.USERNAME_LABEL));
         usernameLabel.setFont(DEFAULT_FONT);
@@ -122,18 +113,15 @@ public class CustomGui extends JFrame{
             try {
                 newInfo = WebUtils.requestWebhookInfo().split("/");
                 if(!newInfo[0].equals("CANCELED") && !id.equals(newInfo[0])) {
-                        changeWebhookInfo(newInfo);
-                        id = newInfo[0];
-                        token = newInfo[1];
-                        channelId = newInfo[2];
-                        avatar = newInfo[3];
-                        username = newInfo[4];
-                        idField.setText(newInfo[0]);
-                        tokenField.setText(newInfo[1]);
-                        channelIdField.setText(newInfo[2]);
-                        channelIdField.setEnabled(false);
-                        DefaultInfoMessagePanePopup successPopup = new DefaultInfoMessagePanePopup(Messages.WEBHOOK_CHANGE_SUCCESS, Messages.WEBHOOK_CHANGE_SUCCESS_TITLE, null);
-                        successPopup.open();
+                    avatarField.setText(avatarField.getText().equals(avatarUrl) ? (newInfo[3].equals("null") ? "" : "https://cdn.discordapp.com/avatars/"+id+"/"+newInfo[3]+".png") : avatarField.getText()); //handle hint field first
+                    setWebhookInfo(newInfo);
+                    idField.setText(newInfo[0]);
+                    tokenField.setText(newInfo[1]);
+                    channelIdField.setText(newInfo[2]);
+                    channelIdField.setEnabled(false);
+
+                    DefaultInfoMessagePanePopup successPopup = new DefaultInfoMessagePanePopup(Messages.WEBHOOK_CHANGE_SUCCESS, Messages.WEBHOOK_CHANGE_SUCCESS_TITLE, null);
+                    successPopup.open();
                 }
             } catch (IOException | ParseException ex) {
                 ex.getStackTrace();
@@ -167,7 +155,7 @@ public class CustomGui extends JFrame{
             try {
                 JFrame imagePreviewFrame = new JFrame("image-preview");
                 BufferedImage pureImage = WebUtils.getImageFromUrl(avatarField.getText());
-                Image previewCover = ResourceUtils.getImageFromPath(ResourceUtils.RESOURCE_PATH+"cover.png");
+                Image previewCover = ResourceUtils.getImageFromPath("cover.png");
                 BufferedImage preview = new BufferedImage(512, 512, BufferedImage.TYPE_INT_ARGB);
                 Graphics previewGraphic = preview.createGraphics();
                 previewGraphic.drawImage(ResourceUtils.cropAsAvatarImage(pureImage), 0, 0, 512, 512, null);
@@ -181,7 +169,6 @@ public class CustomGui extends JFrame{
             } catch (IOException ex) {
                 DefaultErrorMessagePanePopup errorPopup = new DefaultErrorMessagePanePopup(Lang.Messages.ERROR_IMAGE_NOT_FOUND, Lang.Messages.ERROR_GENERAL_TITLE, null);
                 errorPopup.open();
-                ex.printStackTrace();
             }
         });
 
@@ -315,7 +302,12 @@ public class CustomGui extends JFrame{
         });
     }
 
-    private void changeWebhookInfo(String[] newInfo){
+    private void setWebhookInfo(String[] newInfo){
+        id = newInfo[0];
+        token = newInfo[1];
+        channelId = newInfo[2];
+        avatarUrl = newInfo[3].equals("null") ? "" : "https://cdn.discordapp.com/avatars/"+id+"/"+newInfo[3]+".png";
+        username = newInfo[4];
 
     }
 }

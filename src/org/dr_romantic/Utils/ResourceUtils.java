@@ -1,14 +1,14 @@
 package org.dr_romantic.Utils;
 
+import org.dr_romantic.main.DiscordWebhookSender;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 public class ResourceUtils {
-    public static final String RESOURCE_PATH = "src/resources/";
-    public static BufferedImage getImageFromPath(String path) throws IOException {
-        BufferedImage resourceImage = ImageIO.read(new File(path));
+    public static BufferedImage getImageFromPath(String fileName) throws IOException {
+        BufferedImage resourceImage = ImageIO.read(DiscordWebhookSender.class.getResource("resources/"+fileName));
         if(resourceImage == null)
             throw new IOException();
 

@@ -30,7 +30,6 @@ public class WebUtils {
     }
 
     public static boolean checkWebhookPermission(String id, String botToken) throws IOException, InterruptedException {
-
         return sendWebhookPatch(id,  new JSONObject(), botToken) == Result.ALLOW;
     }
 

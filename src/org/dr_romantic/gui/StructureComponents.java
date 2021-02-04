@@ -1,6 +1,6 @@
 package org.dr_romantic.gui;
 
-import org.dr_romantic.main.Main;
+import org.dr_romantic.main.DiscordWebhookSender;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +9,7 @@ import java.awt.event.FocusEvent;
 
 public class StructureComponents {
     private static final Font DEFAULT_FONT = new Font("Ariel", Font.PLAIN, 13);
-    private static final Lang LANG_PACK = Main.getLangPack();
+    private static final Lang LANG_PACK = DiscordWebhookSender.getLangPack();
 
 
 

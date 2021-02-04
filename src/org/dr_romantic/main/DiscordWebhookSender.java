@@ -7,16 +7,16 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.util.Locale;
 
-public class Main {
+public class DiscordWebhookSender {
     private static Lang locale;
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
-        Locale.setDefault(Locale.JAPAN);
 
         locale = Locale.getDefault().getCountry().matches("KR|US|JP") ? Lang.valueOf(Locale.getDefault().getCountry()) : Lang.KR;
         String webhookContents = WebUtils.requestWebhookInfo();
         if(webhookContents.equals("CANCELED")) { return;}
         System.out.println(Locale.getDefault().getCountry());
         new CustomGui(webhookContents);
+
     }
 
     public static Lang getLangPack(){
