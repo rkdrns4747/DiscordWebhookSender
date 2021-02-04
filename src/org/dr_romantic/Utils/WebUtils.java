@@ -132,7 +132,7 @@ public class WebUtils {
         if(botToken == null || botToken.equals("")){ return false;}
         URL getUrl = new URL("https://discord.com/api/channels/"+id);
         HttpsURLConnection connection = (HttpsURLConnection) getUrl.openConnection();
-        connection.addRequestProperty("Authorization", "Bot "+botToken);  //security issue
+        connection.addRequestProperty("Authorization", "Bot "+botToken);
         connection.addRequestProperty("Content-Type", "application/json");
         connection.addRequestProperty("User-Agent", "DiscordWebhookSender");
         connection.setDoOutput(true);
@@ -150,7 +150,8 @@ public class WebUtils {
                 .uri(URI.create("https://discord.com/api/webhooks/"+webhookID))
                 .method("PATCH", HttpRequest.BodyPublishers.ofString(patchParams.toJSONString()))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bot "+botToken) //security issue
+                .header("User-Agent", "DiscordWebhookSender")
+                .header("Authorization", "Bot "+botToken)
                 .build();
         HttpResponse response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
