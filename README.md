@@ -1,4 +1,4 @@
-# DscordWebhookSender [![CodeFactor](https://www.codefactor.io/repository/github/rkdrns4747/discordwebhooksender/badge/master?s=5b223cdbf6da97491863b9a4852bf46ad6a2c5c2)](https://www.codefactor.io/repository/github/rkdrns4747/discordwebhooksender/overview/master)
+# DiscordWebhookSender [![CodeFactor](https://www.codefactor.io/repository/github/rkdrns4747/discordwebhooksender/badge/master?s=5b223cdbf6da97491863b9a4852bf46ad6a2c5c2)](https://www.codefactor.io/repository/github/rkdrns4747/discordwebhooksender/overview/master)
 
 디스코드에서 손쉽게 Webhook 메시지를 전송할 수 있는 프로그램으로 사용자에게 친숙하게 GUI로 제공되고 있습니다.
 
