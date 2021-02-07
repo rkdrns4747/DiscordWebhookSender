@@ -293,6 +293,7 @@ public class CustomGui extends JFrame{
         setVisible(true);
     }
 
+    /* -> also support later
     private static void setFrameFont(Component[] components){
         Arrays.stream(components).forEach(action ->{
             if(action instanceof Container){
@@ -301,6 +302,7 @@ public class CustomGui extends JFrame{
             action.setFont(DEFAULT_FONT);
         });
     }
+    */
 
     private void setWebhookInfo(String[] newInfo){
         id = newInfo[0];

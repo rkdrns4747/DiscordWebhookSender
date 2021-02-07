@@ -1,6 +1,5 @@
 package org.dr_romantic.gui;
 
-import java.util.HashMap;
 import java.util.Map;
 
 

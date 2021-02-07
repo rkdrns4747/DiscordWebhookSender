@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class DiscordWebhookSender {
     private static Lang locale;
-    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+    public static void main(String[] args) throws IOException, ParseException {
 
         locale = Locale.getDefault().getCountry().matches("KR|US|JP") ? Lang.valueOf(Locale.getDefault().getCountry()) : Lang.KR;
         String webhookContents = WebUtils.requestWebhookInfo();
