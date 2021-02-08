@@ -172,7 +172,7 @@ public class CustomGui extends JFrame{
             }
         });
 
-        DefaultButton sendButton = new DefaultButton("submit", Messages.SEND, 500, 480);
+        DefaultButton sendButton = new DefaultButton("submit", Messages.SEND, 509, 480);
         sendButton.addActionListener(e ->{
 
             //check if username, content has appropriate length
