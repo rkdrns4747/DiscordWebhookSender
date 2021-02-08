@@ -5,6 +5,9 @@ import javax.swing.*;
 import org.dr_romantic.Utils.ResourceUtils;
 import org.dr_romantic.gui.Lang.Messages;
 import org.dr_romantic.Utils.WebUtils;
+import org.dr_romantic.logger.LogFormatter;
+import org.dr_romantic.logger.LogHandler;
+import org.dr_romantic.logger.Logger;
 import org.dr_romantic.main.DiscordWebhookSender;
 import org.dr_romantic.gui.StructureComponents.*;
 import org.json.simple.parser.ParseException;
@@ -16,6 +19,7 @@ import java.util.Arrays;
 
 public class CustomGui extends JFrame{
     final static Font DEFAULT_FONT = new Font("Ariel", Font.PLAIN, 13);
+
     private String id;
     private String token;
     private String channelId;
@@ -26,16 +30,16 @@ public class CustomGui extends JFrame{
 
     public CustomGui(String webhookContents) throws IOException {
         final Lang LANG_PACK = DiscordWebhookSender.getLangPack();
+        final java.util.logging.Logger LOG = DiscordWebhookSender.getLOG();
 
         String[] webhookInfo = webhookContents.split("/");
         setWebhookInfo(webhookInfo);
-        setSize( 640,560);
+        setSize( 940,560);
         setTitle(LANG_PACK.get(Messages.TITLE));
         setResizable(false);
         setLayout(null);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         setIconImage(ResourceUtils.getImageFromPath("icon.png"));
 
 
@@ -47,7 +51,6 @@ public class CustomGui extends JFrame{
         JTextField idField = new DefaultTextField("webhookId-field", id, 155, 20, 445, 30);
         idField.setEnabled(false);
         idField.setDisabledTextColor(Color.GRAY);
-
 
         JLabel tokenLabel = new JLabel(LANG_PACK.get(Messages.WEBHOOK_TOKEN_LABEL));
         tokenLabel.setFont(DEFAULT_FONT);
@@ -103,6 +106,22 @@ public class CustomGui extends JFrame{
         JScrollPane contentWrapper = new JScrollPane(contentArea);
         contentWrapper.setBounds(155, 280, 445, 180);
 
+        JSeparator loggerSep = new JSeparator(SwingConstants.VERTICAL);
+        loggerSep.setBounds(630, 0, 1, 640);
+
+        JLabel loggerLabel = new JLabel("LOG");
+        loggerLabel.setFont(DEFAULT_FONT);
+        loggerLabel.setBounds(637, 6, 30, 15);
+
+        LogHandler logHandler = new LogHandler(new LogFormatter());
+        Logger loggerScr = new Logger();
+        loggerScr.setEditable(false);
+        loggerScr.setBackground(Color.BLACK);
+        logHandler.setTarget(loggerScr);
+        LOG.addHandler(logHandler);
+
+        JScrollPane loggerWrapper = new JScrollPane(loggerScr);
+        loggerWrapper.setBounds(635, 25, 286, 495);
 
 
         //buttons
@@ -253,6 +272,7 @@ public class CustomGui extends JFrame{
         });
 
 
+
         /* support later
 
         DefaultButton chooseAvatarButton = new DefaultButton("select_avatar", Messages.CHOOSE_AVATAR, 130, 130);
@@ -290,7 +310,11 @@ public class CustomGui extends JFrame{
         add(contentWrapper);
         //add(chooseAvatarButton); -> support later
         add(sendButton);
+        add(loggerSep);
+        add(loggerLabel);
+        add(loggerWrapper);
         setVisible(true);
+        LOG.info("GUI Load Complete!");
     }
 
     private static void setFrameFont(Component[] components){
